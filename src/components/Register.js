@@ -7,7 +7,9 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
+import { useHistory, Link } from "react-router-dom";
 import ipConfig from "../ipConfig.json";
+
 
 
 const Register = () => {
@@ -195,7 +197,6 @@ const Register = () => {
       <Footer />
     </Box>
   );
-
 };
 
 export default Register;
