@@ -47,6 +47,7 @@ router.post("/register", (req, res) => {
       success: true,
     });
   });
+  
 });
 
 router.post("/login", (req, res) => {
