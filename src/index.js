@@ -19,7 +19,9 @@ ReactDOM.render(
           }}
           preventDuplicate
         >
-          <App />
+          <ThemeProvider theme={theme}>
+         <App />
+          </ThemeProvider>
         </SnackbarProvider>
   </React.StrictMode>,
    document.getElementById('root')

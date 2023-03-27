@@ -13,6 +13,7 @@ import ipConfig from "../ipConfig.json";
 
 
 const Register = () => {
+  const history = useHistory();
   const[username, setUsername] = useState('');
   const[password, setPassword] = useState('');
   const[confirmPassword, setConfirmPassword] = useState('');
@@ -56,13 +57,12 @@ const Register = () => {
     setShowloader(true)
     axios.post(apiUrl, postData)
   .then(async response => {
-    
+    history.push('/login');
     
     enqueueSnackbar("user successfully created" , {
       variant: "success"
     })
-   
-   
+    
     // remove loading sign
     setShowloader(false)
     // Handle success response
@@ -71,13 +71,13 @@ const Register = () => {
 
   .catch(error => {
     // Handle error response
-    enqueueSnackbar(error.response.data.message , {
+    enqueueSnackbar(error.response.data.message, {
       variant: "error"
     })
-    console.log("error : ", error.response.data);
-  });
 
-  };
+  })
+}
+  
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement user input validation logic
   /**
@@ -147,7 +147,7 @@ const Register = () => {
       justifyContent="space-between"
       minHeight="100vh"
     >
-      <Header hasHiddenAuthButtons />
+      <Header hasHiddenAuthButtons={true} />
       <Box className="content">
         <Stack spacing={2} className="form">
           <h2 className="title">Register</h2>
@@ -183,14 +183,16 @@ const Register = () => {
             fullWidth
           />
            { showloader === true ? <CircularProgress /> : null}
+           <Link to="/Register">
            <Button onClick={validateInput} className="button" variant="contained">
             Register Now
            </Button>
+           </Link>
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#">
+             <Link className="link" to="/login">
               Login here
-             </a>
+             </Link>
           </p>
         </Stack>
       </Box>
