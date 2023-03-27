@@ -183,7 +183,7 @@ const Register = () => {
             fullWidth
           />
            { showloader === true ? <CircularProgress /> : null}
-           <Link to="/Register">
+           <Link to="/login">
            <Button onClick={validateInput} className="button" variant="contained">
             Register Now
            </Button>
