@@ -47,7 +47,7 @@ const Register = () => {
    *      "message": "Username is already taken"
    * }
    */
-  const register = async (formData) => {
+    const register = async (formData) => {
     const apiUrl = `http://${ipConfig.workspaceIp}:8082/api/v1/auth/register`
     const postData={
       username: username,

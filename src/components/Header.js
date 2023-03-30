@@ -1,14 +1,43 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Avatar, Button, Stack } from "@mui/material";
+import { Avatar, Button, Stack} from "@mui/material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Box from "@mui/material/Box";
-import React from "react";
+import React, {useState} from "react";
 import "./Header.css";
 import { useHistory, Link } from "react-router-dom";
+import axios from "axios";
+
+import IconButton from '@mui/material/IconButton';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
+import ipConfig from "../ipConfig.json"
 
 
 const Header = (props) => {
   const history = useHistory()
+  const [timerId, setTimerId] = useState()
+  
+  const performSearch = async (searchText) => {
+    props.onChildEvent(searchText)
+  }
+
+  const debounceSearch = async (event, debounceTimeout) => {
+    const searchText = event.target.value;
+  
+    // Clear the existing timer if it exists
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+    
+    // Set a new timer to call the API after 500ms
+    let val = setTimeout(() => {
+      performSearch(searchText);
+    }, 500);
+
+    setTimerId(val)
+  }
 
   function handleLogoutClick() {
     localStorage.clear();
@@ -21,6 +50,7 @@ const Header = (props) => {
       return(
         <Box>
           <img src="hg" alt={localStorage.getItem('username')}/>
+          <input placeholder="searchBar"></input>
           <p>{localStorage.getItem('username')}</p>
           <Link to="/">
           <Button onClick={handleLogoutClick}
@@ -39,8 +69,27 @@ const Header = (props) => {
       return (
         <Box className="header">
           <Box className="header-title">
-              <img src="logo_light.svg" alt="QKart-icon"></img>
+              <img src="logo_light.svg" alt="QKart-icon"/>
           </Box>
+
+          <OutlinedInput
+            id="outlined-adornment-password"
+            type="text"
+            placeholder="Search for items/categories"
+            onChange={debounceSearch}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  edge="end"
+                >
+                  <SearchIcon  />
+                </IconButton>
+              </InputAdornment>
+            }
+            label="Password"
+          />
+
           <div>
           <Link to="/register">
           <Button
