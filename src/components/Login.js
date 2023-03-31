@@ -8,20 +8,23 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Login.css";
-import ipConfig from "../ipConfig.json";
 
 const Login = () => {
-  const history = useHistory();
-  const[username, setUsername] = useState('');
-  const[password, setPassword] = useState('');
-  const[showloading , setShowloading] = useState(false)
-  const[message,setMessage]=useState('');
-
   const { enqueueSnackbar } = useSnackbar();
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const history = useHistory();
+
+  const handleInput = (e) => {
+    setFormData((prevValue) => ({
+      ...prevValue,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Fetch the API response
   /**
    * Perform the Login API call
+   *
    * @param {{ username: string, password: string }} formData
    *  Object with values of username, password and confirm password user entered to register
    *
@@ -45,39 +48,28 @@ const Login = () => {
    *
    */
   const login = async (formData) => {
-    const apiUrl = `http://${ipConfig.workspaceIp}:8082/api/v1/auth/login`
-    const postData={
-      username: username,
-      password: password,
+    if (!validateInput(formData)) return;
+    console.log(formData);
+    try {
+      const response = await axios.post(
+        `${config.endpoint}/auth/login`,
+        formData
+      );
+
+      console.log(response);
+
+      persistLogin(
+        response.data.token,
+        response.data.username,
+        response.data.balance
+      );
+      enqueueSnackbar("Logged in  Successful", { varient: "success" });
+      history.push("/");
+
+      setFormData({ username: "", password: "" });
+    } catch (e) {
+        enqueueSnackbar(e.response.data.message, { variant: "error" });
     }
-    setShowloading(true)
-    axios.post(apiUrl, postData)
-    .then(async response => {
-      persistLogin(response.data.token,response.data.username,response.data.balance)
-      history.push('/');
-      setShowloading(false)
-    
-      enqueueSnackbar("user successfully logged in" , {
-        variant: "success"
-      })
-     
-      
-      // remove loading sign
-      
-      // Handle success response
-})
-  
-    .catch(error => {
-      // Handle error response
-      enqueueSnackbar(error.response.data.message , {
-        variant: "error"
-      })
-    
-    });
-  
-
-    
-
   };
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Validate the input
@@ -96,24 +88,16 @@ const Login = () => {
    * -    Check that password field is not an empty value - "Password is a required field"
    */
   const validateInput = (data) => {
-    if(username === "" || password === ""){
-       enqueueSnackbar("Username or Password is required" , {
-        variant: "error"
-      })
+    if (!data.username) {
+      enqueueSnackbar("Username is a required filed", { variant: "warning" });
+      return false;
     }
-    else{ 
-      login()
-    } 
+    if (!data.password) {
+      enqueueSnackbar("Password is a required filed", { variant: "warning" });
+      return false;
+    }
+    return true;
   };
-  
-
-  const changeUsernameHandler = (event) =>{
-    setUsername(event.target.value)
-  }
-
-  const changePasswordHandler = (event) =>{
-    setPassword(event.target.value)
-  }
 
   // TODO: CRIO_TASK_MODULE_LOGIN - Persist user's login information
   /**
@@ -132,9 +116,9 @@ const Login = () => {
    * -    `balance` field in localStorage can be used to store the balance amount in the user's wallet
    */
   const persistLogin = (token, username, balance) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("username", username);
-    localStorage.setItem("balance", balance);
+    window.localStorage.setItem("token",token);
+    window.localStorage.setItem("username",username);
+    window.localStorage.setItem("balance",balance);
   };
 
   return (
@@ -144,39 +128,46 @@ const Login = () => {
       justifyContent="space-between"
       minHeight="100vh"
     >
-      <Header hasHiddenAuthButtons={true} />
+      <Header hasHiddenAuthButtons />
       <Box className="content">
         <Stack spacing={2} className="form">
           <h2 className="title">Login</h2>
-        <TextField 
-         onChange={changeUsernameHandler}
-          required
-          id="username"
+          <TextField
+            id="username"
             label="Username"
             variant="outlined"
             title="Username"
             name="username"
             placeholder="Enter Username"
             fullWidth
-        />
-        <TextField
-         onChange={changePasswordHandler}
-         id="password"
-         variant="outlined"
-         label="Password"
-         name="password"
-         type="password"
-         fullWidth
-        />
-        {showloading === true ? <CircularProgress /> : null}
-        <Link to="/Login">
-        <Button  onClick={validateInput} className="button" variant="contained">
-            Login To QKart
+            // value={formData.username}
+            onChange={handleInput}
+          />
+          <TextField
+            id="password"
+            variant="outlined"
+            label="Password"
+            name="password"
+            type="password"
+            helperText="Password must be atleast 6 characters length"
+            fullWidth
+            placeholder="Enter a password with minimum 6 characters"
+            onChange={handleInput}
+          />
+          <Button
+            className="button"
+            variant="contained"
+            onClick={() => login(formData)}
+          >
+            LOGIN TO QKART
           </Button>
-          </Link>
-           <p className="secondary-action">
-            Don't have an account? <span className="colors"> <Link to='/register'> Register Now</Link></span>
-           </p>
+          <p className="secondary-action">
+            Don't have an account?{" "}
+            {/* <a className="link" href="./Register.js">
+              Register Now
+            </a> */}
+            <Link className="link" to={"/register"} >Register Now</Link>
+          </p>
         </Stack>
       </Box>
       <Footer />

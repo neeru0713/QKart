@@ -3,8 +3,9 @@ import ipConfig from "./ipConfig.json";
 import { Route, Switch } from "react-router-dom";
 import Login from "./components/Login";
 import Products from "./components/Products";
-import { BrowserRouter } from "react-router-dom";
-import Checkout from "./components/Checkout"
+import Checkout from "./components/Checkout";
+// import { Check } from "@mui/icons-material";
+// import Thanks from "./components/Thanks";
 
 export const config = {
   endpoint: `http://${ipConfig.workspaceIp}:8082/api/v1`,
@@ -13,19 +14,20 @@ export const config = {
 function App() {
   return (
     <div className="App">
-      {/* TODO: CRIO_TASK_MODULE_LOGIN - To add configure routes and their mapping */}
-      <BrowserRouter>
-      <Switch>
-        <Route exact path="/" component={Products} />
-        <Route path="/register" component={Register} />
-        <Route path="/login" component={Login} />
-        <Route path="/checkout" component={Checkout} />
-      </Switch>
-      </BrowserRouter>
-
-          {/* <Register /> */}
-          {/* <Login /> */}
-          {/* <Products/> */}
+          <Switch >
+            <Route path={"/register"}>
+              <Register />
+            </Route>
+            <Route path={"/login"}>
+              <Login/>
+            </Route>
+            <Route path={"/checkout"}>
+              <Checkout/>
+            </Route>
+            <Route extact path={"/"}>
+              <Products/>
+            </Route>
+          </Switch>
     </div>
   );
 }
