@@ -50,7 +50,23 @@ const Header = (props) => {
       return(
         <Box>
           <img src="hg" alt={localStorage.getItem('username')}/>
-          <input placeholder="searchBar"></input>
+          <OutlinedInput
+            id="outlined-adornment-password"
+            type="text"
+            placeholder="Search for items/categories"
+            onChange={debounceSearch}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  edge="end"
+                >
+                  <SearchIcon  />
+                </IconButton>
+              </InputAdornment>
+            }
+            label="text"
+          />
           <p>{localStorage.getItem('username')}</p>
           <Link to="/">
           <Button onClick={handleLogoutClick}
@@ -87,7 +103,7 @@ const Header = (props) => {
                 </IconButton>
               </InputAdornment>
             }
-            label="Password"
+            label="text"
           />
 
           <div>

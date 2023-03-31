@@ -4,6 +4,7 @@ import { Route, Switch } from "react-router-dom";
 import Login from "./components/Login";
 import Products from "./components/Products";
 import { BrowserRouter } from "react-router-dom";
+import Checkout from "./components/Checkout"
 
 export const config = {
   endpoint: `http://${ipConfig.workspaceIp}:8082/api/v1`,
@@ -18,6 +19,7 @@ function App() {
         <Route exact path="/" component={Products} />
         <Route path="/register" component={Register} />
         <Route path="/login" component={Login} />
+        <Route path="/checkout" component={Checkout} />
       </Switch>
       </BrowserRouter>
 

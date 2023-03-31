@@ -4,6 +4,10 @@
   left: 4rem;
 }
 
+.bg-color{
+  background-color: rgb(149, 211, 149);
+}
+
 .hero {
   background-image: url("../assets/hero_image.png");
   background-position: center;

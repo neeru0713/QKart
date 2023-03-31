@@ -6,9 +6,14 @@ import {
 } from "@mui/icons-material";
 import { Button, IconButton, Stack } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
-import { useHistory } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import { useHistory, Link } from "react-router-dom";
 import "./Cart.css";
+import axios from "axios"
+import ipConfig from "../ipConfig.json"
+
+
+var myCartData;
 
 // Definition of Data Structures used
 /**
@@ -48,6 +53,16 @@ import "./Cart.css";
  *
  */
 export const generateCartItemsFrom = (cartData, productsData) => {
+  myCartData = cartData
+  let cartItemArray = [];
+  cartData.forEach((cart) => {
+    let cartItem = productsData.find(product => product._id === cart.productId);
+    if(cartItem){
+      cartItemArray.push(cartItem)
+    }
+  })
+  
+  return cartItemArray
 };
 
 /**
@@ -61,6 +76,18 @@ export const generateCartItemsFrom = (cartData, productsData) => {
  *
  */
 export const getTotalCartValue = (items = []) => {
+  let total = 0;
+  items.forEach((item)=>{
+    let arr = myCartData.filter((cartItem) => {return cartItem.productId === item._id})
+    let mul;
+    if(arr.length){
+      mul = arr[0].qty
+    } else{
+      mul = 0;
+    }
+    total = total + item.cost * mul
+  })
+  return total;
 };
 
 
@@ -80,12 +107,67 @@ export const getTotalCartValue = (items = []) => {
  */
 const ItemQuantity = ({
   value,
-  handleAdd,
-  handleDelete,
+  productId,
+  onQuantityChange,
+  onHavingItemRemoved
 }) => {
+
+  function handleAdd(){
+
+    let mytoken = localStorage.getItem('token');
+    const headers = {
+      'Authorization': "Bearer "+mytoken,
+      'Content-Type': 'application/json'
+    }
+
+    const body = {
+      productId: productId,
+      qty: value+1
+    }
+
+    axios.post(`http://${ipConfig.workspaceIp}:8082/api/v1/cart`, body , {headers})
+    .then(function (response) {
+      console.log("plus button response : ", response.data);
+      onQuantityChange(response.data)
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  }
+
+  function handleDelete(event){
+
+    let mytoken = localStorage.getItem('token');
+    const headers = {
+      'Authorization': "Bearer "+mytoken,
+      'Content-Type': 'application/json'
+    }
+
+    const body = {
+      productId: productId,
+      qty: value-1
+    }
+
+    axios.post(`http://${ipConfig.workspaceIp}:8082/api/v1/cart`, body , {headers})
+    .then(function (response) {
+      onQuantityChange(response.data)
+      if(value === 1){
+        onHavingItemRemoved()
+      }
+      console.log("minus button response : ", response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  }
+
+  
+
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={handleDelete}>
+      <IconButton size="small" color="primary" onClick={handleDelete} >
         <RemoveOutlined />
       </IconButton>
       <Box padding="0.5rem" data-testid="item-qty">
@@ -114,15 +196,61 @@ const ItemQuantity = ({
  */
 const Cart = ({
   products,
-  items = [],
+  items,
   handleQuantity,
+  updateCartItems
 }) => {
 
-  if (!items.length) {
+  const [cartItems, setCartItems] = useState([])
+  const [quantityArray, setQuantityArray] = useState([])
+  const [totalCost, setTotalCost] = useState(getTotalCartValue(items))
+
+  useEffect(() => {
+    // This code will run whenever the props change
+    setQuantityArray(handleQuantity)
+    setTotalCost(getTotalCartValue(items))
+  }, [handleQuantity]);
+
+  useEffect(() => {
+    // This code will run whenever the props change
+    setCartItems(items)
+    setTotalCost(getTotalCartValue(items)) 
+  }, [items]);
+
+  useEffect(()=>{
+    setTotalCost(getTotalCartValue(items))
+  }, [])
+
+  
+
+  function getQtyOfItem(item){
+    let arr = quantityArray.filter((cartItem) => {return cartItem.productId === item._id})
+    if(arr.length){
+      return arr[0].qty;
+    } else{
+      return 0;
+    }
+  }
+
+  function updateQuantity(val){
+    console.log("parent tak gal pahuch ri a")
+    setQuantityArray(val)
+    myCartData = val
+    setTotalCost(getTotalCartValue(cartItems))
+  }
+
+  function itemRemoved(){
+    updateCartItems()
+  }
+
+  // const [cartItems, setCartItems] = useState([])
+
+  if (!cartItems.length) {
     return (
       <Box className="cart empty">
         <ShoppingCartOutlined className="empty-cart-icon" />
         <Box color="#aaa" textAlign="center">
+          
           Cart is empty. Add more items to the cart to checkout.
         </Box>
       </Box>
@@ -132,7 +260,51 @@ const Cart = ({
   return (
     <>
       <Box className="cart">
-        {/* TODO: CRIO_TASK_MODULE_CART - Display view for each cart item with non-zero quantity */}
+        {/* TODO: CRIO_TASK_MODULE_CART - Display view for each cart item with non-zero quantity */
+        
+        cartItems.map((item,i) => (
+
+          <Box display="flex" alignItems="flex-start" padding="1rem" key={i}>
+              <Box className="image-container">
+                  <img
+                      // Add product image
+                      src={item.image}
+                      // Add product name as alt eext
+                      alt="image"
+                      width="100%"
+                      height="100%"
+                  />
+              </Box>
+              <Box
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="space-between"
+                  height="6rem"
+                  paddingX="1rem"
+              >
+                  <div>{item.name}</div>
+                  <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                  >
+                  <ItemQuantity
+                  onQuantityChange={updateQuantity}
+                  value={getQtyOfItem(item)}
+                  productId={item._id}
+                  onHavingItemRemoved={itemRemoved}
+                  // Add required props by checking implementation
+                  />
+                  <Box padding="0.5rem" fontWeight="700">
+                      ${item.cost}
+                  </Box>
+                  </Box>
+              </Box>
+          </Box>
+
+        ))
+        
+        }
         <Box
           padding="1rem"
           display="flex"
@@ -149,11 +321,12 @@ const Cart = ({
             alignSelf="center"
             data-testid="cart-total"
           >
-            ${getTotalCartValue(items)}
+            ${ totalCost }
           </Box>
         </Box>
 
         <Box display="flex" justifyContent="flex-end" className="cart-footer">
+          <Link to="/checkout">
           <Button
             color="primary"
             variant="contained"
@@ -162,10 +335,12 @@ const Cart = ({
           >
             Checkout
           </Button>
+          </Link>
         </Box>
       </Box>
     </>
   );
+  
 };
 
 export default Cart;
