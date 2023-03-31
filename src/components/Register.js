@@ -48,7 +48,7 @@ const Register = () => {
    * }
    */
     const register = async (formData) => {
-    const apiUrl = `http://${ipConfig.workspaceIp}:8082/api/v1/auth/register`
+    const apiUrl = `https://qkart-frontend-5kte.onrender.com/api/v1/auth/register`
     const postData={
       username: username,
       password: password,
